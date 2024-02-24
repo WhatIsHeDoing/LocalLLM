@@ -1,0 +1,5 @@
+ctransformers
+faiss-cpu
+langchain
+langchain-community
+sentence_transformers
