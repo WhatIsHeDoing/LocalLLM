@@ -6,11 +6,23 @@ from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Define what documents to load.
-loader = DirectoryLoader("test/", glob="*.txt", loader_cls=TextLoader)
 
-print("Interpreting information in the documents...")
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+    data_dir: str = "test"
+    """Directory containing the data ultimately used to augment the LLM."""
+
+
+settings = Settings()
+
+print(
+    f"Interpreting the information of documents in the '{settings.data_dir}' directory..."
+)
+
+loader = DirectoryLoader(settings.data_dir, glob="*.txt", loader_cls=TextLoader)
 documents = loader.load()
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 texts = splitter.split_documents(documents)

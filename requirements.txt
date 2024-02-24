@@ -2,4 +2,5 @@ ctransformers
 faiss-cpu
 langchain
 langchain-community
+pydantic-settings
 sentence_transformers

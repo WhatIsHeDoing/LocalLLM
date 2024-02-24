@@ -6,3 +6,6 @@ data/**/*
 
 # .. but keep the directory around with a keep file.
 !data/.gitkeep
+
+# Ignore specific envionment setting overrides.
+.env
