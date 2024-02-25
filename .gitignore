@@ -1,6 +1,9 @@
 # Do not store the huge LLM binaries!
 bin/
 
+# ... but keep the directory around with a keep file.
+!bin/.gitkeep
+
 # Ignore all local data that is potentially sensitive...
 data/**/*
 

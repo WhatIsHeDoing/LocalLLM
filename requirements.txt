@@ -1,5 +1,6 @@
 ctransformers
 faiss-cpu
+halo
 langchain
 langchain-community
 pydantic-settings

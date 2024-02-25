@@ -3,44 +3,56 @@ This script reads the database of information from local text files
 and uses a large language model to answer questions about their content.
 """
 
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.llms import CTransformers
-from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from halo import Halo
+from time import monotonic
+import warnings
+
+# Hide LangChainDeprecationWarning...
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from langchain_community.document_loaders import DirectoryLoader, TextLoader
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain_community.llms import CTransformers
+    from langchain_community.vectorstores import FAISS
+    from langchain.chains import RetrievalQA
+    from langchain.prompts import PromptTemplate
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 binary_directory = "bin"
 """Directory of the local binary files."""
 
-# The template used when prompting the AI.
-template = """Use the following pieces of information to answer the user's question.
-If you don't know the answer, just say that you don't know, don't try to make up an answer.
-Context: {context}
-Question: {question}
-Only return the helpful answer below and nothing else.
-Helpful answer:
-"""
-
-print("Loading the Large Language Model...")
+llm_spinner = Halo("Loading the Large Language Model...", spinner="dots")
+llm_spinner.start()
+llm_load_start_time = monotonic()
 
 llm = CTransformers(
-    model=f"./{binary_directory}/llama-2-7b-chat.ggmlv3.q8_0.bin",
+    model=f"./{binary_directory}/llama-2-7b-chat.ggmlv3.q2_K.bin",
     model_type="llama",
     config={"max_new_tokens": 256, "temperature": 0.01},
 )
 
-print("Loading the interpreted information from the local database...")
+llm_spinner.stop_and_persist("🧠", "Large Language Model loaded")
+
+print("📂 Loading the information interpreted from local files...")
 
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
 )
 
-db = FAISS.load_local("bin", embeddings)
+db = FAISS.load_local(binary_directory, embeddings)
 
-print("Preparing a version of the LLM pre-loaded with the local content...")
+print("🔃 Preparing a version of the LLM preloaded with the local content...")
 retriever = db.as_retriever(search_kwargs={"k": 2})
+
+template = """
+Use the following information to answer the question from the user.
+Do not try to make up an answer if you do not know it.
+Context: {context}
+Question: {question}
+# Only return the helpful answer below.
+# Helpful answer:
+"""
+
 prompt = PromptTemplate(template=template, input_variables=["context", "question"])
 
 qa_llm = RetrievalQA.from_chain_type(
@@ -51,9 +63,23 @@ qa_llm = RetrievalQA.from_chain_type(
     chain_type_kwargs={"prompt": prompt},
 )
 
-print("Asking the AI chat about information in our local files...")
+print("⌛ Prepared in", round(monotonic() - llm_load_start_time), "seconds")
+print("🚀 The AI chatbot is ready to answer your questions!")
 
-query = "Who is the author of FftSharp? What is their favourite color?"
-output = qa_llm({"query": query})
-print(output["result"])
-print(output)
+while True:
+    print()
+    query = input("🗨️ Ask your next question or task, or leave blank to exit:\n")
+
+    if not query:
+        break
+
+    query_spinner = Halo(text="Answering...", spinner="dots")
+    query_spinner.start()
+    query_start_time = monotonic()
+    output = qa_llm({"query": query})
+
+    query_spinner.stop_and_persist("💬", "The chatbot responded with:")
+    print(output["result"])
+    print("⌛ Answered in", round(monotonic() - query_start_time), "seconds")
+
+print("👋 Closing the app...")
