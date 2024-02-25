@@ -4,4 +4,6 @@ halo
 langchain
 langchain-community
 pydantic-settings
+python-docx
 sentence_transformers
+unstructured

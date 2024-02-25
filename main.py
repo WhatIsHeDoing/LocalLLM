@@ -12,13 +12,11 @@ import warnings
 # Hide LangChainDeprecationWarning...
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    from langchain_community.document_loaders import DirectoryLoader, TextLoader
     from langchain_community.embeddings import HuggingFaceEmbeddings
     from langchain_community.llms import CTransformers
     from langchain_community.vectorstores import FAISS
     from langchain.chains import RetrievalQA
     from langchain.prompts import PromptTemplate
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 now = int(datetime.now().strftime("%Y%m%d%H%M%S"))
 
