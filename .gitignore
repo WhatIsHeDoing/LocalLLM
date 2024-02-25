@@ -10,5 +10,11 @@ data/**/*
 # .. but keep the directory around with a keep file.
 !data/.gitkeep
 
+# Ignore all local logs that are potentially sensitive...
+logs/**/*
+
+# .. but keep the directory around with a keep file.
+!logs/.gitkeep
+
 # Ignore specific envionment setting overrides.
 .env

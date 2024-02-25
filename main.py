@@ -3,8 +3,10 @@ This script reads the database of information from local text files
 and uses a large language model to answer questions about their content.
 """
 
+from datetime import datetime
 from halo import Halo
 from time import monotonic
+import logging
 import warnings
 
 # Hide LangChainDeprecationWarning...
@@ -17,6 +19,15 @@ with warnings.catch_warnings():
     from langchain.chains import RetrievalQA
     from langchain.prompts import PromptTemplate
     from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+now = int(datetime.now().strftime("%Y%m%d%H%M%S"))
+
+logging.basicConfig(
+    datefmt="%Y%m%d%H%M%S",
+    filename=f"logs/{now}.log",
+    format="%(asctime)s:%(message)s",
+    level=logging.INFO,
+)
 
 binary_directory = "bin"
 """Directory of the local binary files."""
@@ -68,18 +79,20 @@ print("🚀 The AI chatbot is ready to answer your questions!")
 
 while True:
     print()
-    query = input("🗨️ Ask your next question or task, or leave blank to exit:\n")
+    query = input("🗨️ Submit a question or task, or leave blank to exit:\n")
 
     if not query:
         break
 
+    logging.info(query)
     query_spinner = Halo(text="Answering...", spinner="dots")
     query_spinner.start()
     query_start_time = monotonic()
-    output = qa_llm({"query": query})
+    result = qa_llm({"query": query})["result"]
 
     query_spinner.stop_and_persist("💬", "The chatbot responded with:")
-    print(output["result"])
+    print(result)
     print("⌛ Answered in", round(monotonic() - query_start_time), "seconds")
+    logging.info(result)
 
 print("👋 Closing the app...")
