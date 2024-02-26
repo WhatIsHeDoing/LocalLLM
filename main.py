@@ -4,6 +4,7 @@ and uses a Large Language Model (LLM) to answer questions about their content.
 """
 
 from datetime import datetime
+from emoji import emojize
 from halo import Halo
 from humanize import naturaldelta
 from settings import Settings
@@ -28,7 +29,7 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-print(f"⚙️ Loading settings...")
+print(emojize(":radio_button: Loading settings..."))
 settings = Settings()
 print("   ", settings)
 
@@ -42,9 +43,9 @@ llm = CTransformers(
     config={"max_new_tokens": 256, "temperature": 0.01},
 )
 
-llm_spinner.stop_and_persist("🧠", "Large Language Model loaded")
+llm_spinner.stop_and_persist(emojize(":brain:"), "Large Language Model loaded")
 
-print("📂 Loading the information interpreted from local files...")
+print(emojize(":open_file_folder: Loading local interpreted file information..."))
 
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
@@ -52,7 +53,7 @@ embeddings = HuggingFaceEmbeddings(
 
 db = FAISS.load_local(settings.db_dir, embeddings)
 
-print("🔃 Preparing a version of the LLM preloaded with the local content...")
+print(emojize(":plus: a version of the LLM preloaded with the local content..."))
 retriever = db.as_retriever(search_kwargs={"k": 2})
 
 template = """
@@ -60,8 +61,8 @@ Use the following information to answer the question from the user.
 Do not try to make up an answer if you do not know it.
 Context: {context}
 Question: {question}
-# Only return the helpful answer below.
-# Helpful answer:
+Only return the helpful answer below.
+Helpful answer:
 """
 
 prompt = PromptTemplate(template=template, input_variables=["context", "question"])
@@ -74,12 +75,18 @@ qa_llm = RetrievalQA.from_chain_type(
     chain_type_kwargs={"prompt": prompt},
 )
 
-print("⌛ Prepared in", naturaldelta(datetime.now() - llm_load_start))
-print("🚀 The AI chatbot is ready to answer your questions!")
+print(
+    emojize(":hourglass_done: Prepared in"),
+    naturaldelta(datetime.now() - llm_load_start),
+)
+
+print(emojize(":rocket: The AI chatbot is ready to help!"))
+prompt = emojize(
+    "\n:speech_balloon: Write a question or task, or leave blank to exit:\n"
+)
 
 while True:
-    print()
-    query = input("🗨️ Submit a question or task, or leave blank to exit:\n")
+    query = input(prompt)
 
     if not query:
         break
@@ -88,11 +95,16 @@ while True:
     query_spinner = Halo(text="Answering...", spinner="dots")
     query_spinner.start()
     query_start = datetime.now()
-    result = qa_llm({"query": query})["result"]
+    result = qa_llm({"query": query})  # ["result"]
 
-    query_spinner.stop_and_persist("💬", "The chatbot responded with:")
+    query_spinner.stop_and_persist(emojize(":robot:"), "The chatbot responded with:")
     print(result)
-    print("⌛ Answered in", naturaldelta(datetime.now() - query_start))
+
+    print(
+        emojize(":hourglass_done: Answered in"),
+        naturaldelta(datetime.now() - query_start),
+    )
+
     logging.info(result)
 
-print("👋 Closing the app...")
+print(emojize(":waving_hand: Closing the app..."))

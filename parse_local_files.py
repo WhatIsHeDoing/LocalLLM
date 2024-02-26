@@ -9,6 +9,7 @@ from langchain_community.document_loaders import (
 )
 
 from datetime import datetime
+from emoji import emojize
 from humanize import naturaldelta
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -17,11 +18,11 @@ from settings import Settings
 
 start = datetime.now()
 
-print(f"⚙️ Loading settings...")
+print(emojize(":radio_button: Loading settings..."))
 settings = Settings()
 print("   ", settings)
 
-print(f"📂 Loading local documents...")
+print(emojize(":open_file_folder: Loading local documents..."))
 
 loader = DirectoryLoader(
     settings.data_dir, glob="*.txt", loader_cls=TextLoader, recursive=True
@@ -39,9 +40,9 @@ word_loader = DirectoryLoader(
 documents.extend(word_loader.load())
 
 for document in documents:
-    print("  📄", document.metadata["source"])
+    print(emojize("  :page_facing_up:"), document.metadata["source"])
 
-print(f"🔍 Interpreting the documents...")
+print(emojize(":magnifying_glass_tilted_left: Interpreting the documents..."))
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 texts = splitter.split_documents(documents)
 
@@ -49,8 +50,8 @@ embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
 )
 
-print("💾 Saving to a local database...")
+print(emojize(":floppy_disk: Saving to a local database..."))
 db = FAISS.from_documents(texts, embeddings)
 db.save_local(settings.db_dir)
 
-print("👋 Done in", naturaldelta(datetime.now() - start))
+print(emojize(":waving_hand: Done in"), naturaldelta(datetime.now() - start))
