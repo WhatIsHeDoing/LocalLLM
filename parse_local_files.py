@@ -13,18 +13,13 @@ from humanize import naturaldelta
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-
-    data_dir: str = "test"
-    """Directory containing the data ultimately used to augment the LLM."""
-
+from settings import Settings
 
 start = datetime.now()
+
+print(f"⚙️ Loading settings...")
 settings = Settings()
+print("   ", settings)
 
 print(f"📂 Loading local documents...")
 
@@ -56,6 +51,6 @@ embeddings = HuggingFaceEmbeddings(
 
 print("💾 Saving to a local database...")
 db = FAISS.from_documents(texts, embeddings)
-db.save_local("bin")
+db.save_local(settings.db_dir)
 
 print("👋 Done in", naturaldelta(datetime.now() - start))

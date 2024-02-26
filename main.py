@@ -6,6 +6,7 @@ and uses a Large Language Model (LLM) to answer questions about their content.
 from datetime import datetime
 from halo import Halo
 from humanize import naturaldelta
+from settings import Settings
 import logging
 import warnings
 
@@ -27,15 +28,16 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-binary_directory = "bin"
-"""Directory of the local binary files."""
+print(f"⚙️ Loading settings...")
+settings = Settings()
+print("   ", settings)
 
 llm_spinner = Halo("Loading the Large Language Model...", spinner="dots")
 llm_spinner.start()
 llm_load_start = datetime.now()
 
 llm = CTransformers(
-    model=f"./{binary_directory}/llama-2-7b-chat.ggmlv3.q2_K.bin",
+    model=str(settings.llm_path),
     model_type="llama",
     config={"max_new_tokens": 256, "temperature": 0.01},
 )
@@ -48,7 +50,7 @@ embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
 )
 
-db = FAISS.load_local(binary_directory, embeddings)
+db = FAISS.load_local(settings.db_dir, embeddings)
 
 print("🔃 Preparing a version of the LLM preloaded with the local content...")
 retriever = db.as_retriever(search_kwargs={"k": 2})

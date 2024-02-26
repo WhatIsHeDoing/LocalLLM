@@ -1,19 +1,22 @@
-# Do not store the huge LLM binaries!
-bin/
+# Python cache.
+__pycache__
 
-# ... but keep the directory around with a keep file.
-!bin/.gitkeep
+# Do not store the local file interpretation binaries...
+db/
+
+# ... but ensure the default directory is present using a keep file.
+!db/.gitkeep
 
 # Ignore all local data that is potentially sensitive...
 data/**/*
 
-# .. but keep the directory around with a keep file.
+# ... but ensure the default directory is present using a keep file.
 !data/.gitkeep
 
 # Ignore all local logs that are potentially sensitive...
 logs/**/*
 
-# .. but keep the directory around with a keep file.
+# ... but ensure the default directory is present using a keep file.
 !logs/.gitkeep
 
 # Ignore specific envionment setting overrides.
