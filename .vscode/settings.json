@@ -1,8 +1,13 @@
 {
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.unusedImports": "explicit"
+        },
+        "editor.defaultFormatter": "ms-python.black-formatter",
     },
     "cSpell.words": [
+        "autoupdate",
         "FAISS",
         "ggmlv",
         "langchain",

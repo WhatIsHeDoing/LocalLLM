@@ -1,9 +1,11 @@
+black
 ctransformers
 faiss-cpu
 halo
 humanize
 langchain
 langchain-community
+pre-commit
 pydantic-settings
 python-docx
 sentence_transformers

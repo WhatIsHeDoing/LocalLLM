@@ -1,0 +1,18 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+          - id: check-added-large-files
+          - id: check-ast
+          - id: detect-private-key
+          - id: end-of-file-fixer
+          - id: forbid-submodules
+          - id: mixed-line-ending
+          - id: name-tests-test
+          - id: trailing-whitespace
+    - repo: https://github.com/psf/black
+      rev: 24.2.0
+      hooks:
+          - id: black

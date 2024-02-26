@@ -7,8 +7,17 @@ clone_llm:
 install:
 	pip install -r requirements.txt
 
-parse_local_files:
+lint:
+	pre-commit run --all-files
+
+parse:
 	python3 parse_local_files.py
+
+pre_commit_setup:
+	pre-commit install
+
+pre_commit_update:
+	pre-commit autoupdate
 
 run:
 	python3 main.py
