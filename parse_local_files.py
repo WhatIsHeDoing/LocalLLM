@@ -1,5 +1,5 @@
 """
-This script creates a database of information gathered from local text files.
+This script creates a database of information gathered from local files.
 """
 
 from langchain_community.document_loaders import (
@@ -8,6 +8,8 @@ from langchain_community.document_loaders import (
     UnstructuredWordDocumentLoader,
 )
 
+from datetime import datetime
+from humanize import naturaldelta
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -21,34 +23,39 @@ class Settings(BaseSettings):
     """Directory containing the data ultimately used to augment the LLM."""
 
 
+start = datetime.now()
 settings = Settings()
 
-print(
-    f"🔍 Interpreting text and Word documents in the '{settings.data_dir}' directory..."
+print(f"📂 Loading local documents...")
+
+loader = DirectoryLoader(
+    settings.data_dir, glob="*.txt", loader_cls=TextLoader, recursive=True
 )
 
-loader = DirectoryLoader(settings.data_dir, glob="*.txt", loader_cls=TextLoader)
 documents = loader.load()
-splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-texts = splitter.split_documents(documents)
 
 word_loader = DirectoryLoader(
-    settings.data_dir, glob="*.docx", loader_cls=UnstructuredWordDocumentLoader
+    settings.data_dir,
+    glob="*.doc[x]*",
+    loader_cls=UnstructuredWordDocumentLoader,
+    recursive=True,
 )
 
-word_documents = word_loader.load()
+documents.extend(word_loader.load())
 
-texts.extend(splitter.split_documents(word_documents))
+for document in documents:
+    print("  📄", document.metadata["source"])
+
+print(f"🔍 Interpreting the documents...")
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+texts = splitter.split_documents(documents)
 
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
 )
 
-print("🗃️ Creating the local database...")
+print("💾 Saving to a local database...")
 db = FAISS.from_documents(texts, embeddings)
-
-print("💾 Saving the local database...")
 db.save_local("bin")
 
-print("👋 Done!")
-# JupyterGoBoom
+print("👋 Done in", naturaldelta(datetime.now() - start))

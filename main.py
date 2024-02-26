@@ -1,11 +1,11 @@
 """
-This script reads the database of information from local text files
-and uses a large language model to answer questions about their content.
+This script reads the database of information curated separately from local files
+and uses a Large Language Model (LLM) to answer questions about their content.
 """
 
 from datetime import datetime
 from halo import Halo
-from time import monotonic
+from humanize import naturaldelta
 import logging
 import warnings
 
@@ -32,7 +32,7 @@ binary_directory = "bin"
 
 llm_spinner = Halo("Loading the Large Language Model...", spinner="dots")
 llm_spinner.start()
-llm_load_start_time = monotonic()
+llm_load_start = datetime.now()
 
 llm = CTransformers(
     model=f"./{binary_directory}/llama-2-7b-chat.ggmlv3.q2_K.bin",
@@ -72,7 +72,7 @@ qa_llm = RetrievalQA.from_chain_type(
     chain_type_kwargs={"prompt": prompt},
 )
 
-print("⌛ Prepared in", round(monotonic() - llm_load_start_time), "seconds")
+print("⌛ Prepared in", naturaldelta(datetime.now() - llm_load_start))
 print("🚀 The AI chatbot is ready to answer your questions!")
 
 while True:
@@ -85,12 +85,12 @@ while True:
     logging.info(query)
     query_spinner = Halo(text="Answering...", spinner="dots")
     query_spinner.start()
-    query_start_time = monotonic()
+    query_start = datetime.now()
     result = qa_llm({"query": query})["result"]
 
     query_spinner.stop_and_persist("💬", "The chatbot responded with:")
     print(result)
-    print("⌛ Answered in", round(monotonic() - query_start_time), "seconds")
+    print("⌛ Answered in", naturaldelta(datetime.now() - query_start))
     logging.info(result)
 
 print("👋 Closing the app...")

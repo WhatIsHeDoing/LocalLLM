@@ -1,6 +1,7 @@
 ctransformers
 faiss-cpu
 halo
+humanize
 langchain
 langchain-community
 pydantic-settings
