@@ -1,8 +1,10 @@
+git_repo_name := Llama-2-7B-Chat-GGML
+
 clone_llm:
 	cd ../ && \
-	git clone --no-checkout --depth=1 --no-tags https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML && \
-	git restore --staged llama-2-7b-chat.ggmlv3.q2_K.bin && \
-	git lfs fetch --include=llama-2-7b-chat.ggmlv3.q2_K.bin
+	git clone --no-checkout --depth=1 --no-tags https://huggingface.co/TheBloke/$(git_repo_name) && \
+	cd $(git_repo_name) && \
+	git lfs pull --include llama-2-7b-chat.ggmlv3.q2_K.bin
 
 install:
 	pip install -r requirements.txt
