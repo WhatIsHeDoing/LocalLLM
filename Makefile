@@ -1,5 +1,8 @@
 git_repo_name := Llama-2-7B-Chat-GGML
 
+clean:
+	rm db/index.* logs/*.log
+
 clone_llm:
 	cd ../ && \
 	git clone --no-checkout --depth=1 --no-tags https://huggingface.co/TheBloke/$(git_repo_name) && \

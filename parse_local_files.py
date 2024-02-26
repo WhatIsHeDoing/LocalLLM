@@ -14,13 +14,13 @@ from humanize import naturaldelta
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from settings import Settings
+from settings import print_as_dot_env, Settings
 
 start = datetime.now()
 
 print(emojize(":radio_button: Loading settings..."))
 settings = Settings()
-print("   ", settings)
+print_as_dot_env(settings)
 
 print(emojize(":open_file_folder: Loading local documents..."))
 
