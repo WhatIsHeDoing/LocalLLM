@@ -2,15 +2,18 @@
 This script creates a database of information gathered from local files.
 """
 
-from langchain_community.document_loaders import (
-    DirectoryLoader,
-    TextLoader,
-    UnstructuredWordDocumentLoader,
-)
-
 from datetime import datetime
 from emoji import emojize
 from humanize import naturaldelta
+from itertools import chain
+
+from langchain_community.document_loaders import (
+    DirectoryLoader,
+    TextLoader,
+    UnstructuredPDFLoader,
+    UnstructuredWordDocumentLoader,
+)
+
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -24,20 +27,25 @@ print_as_dot_env(settings)
 
 print(emojize(":open_file_folder: Loading local documents..."))
 
-loader = DirectoryLoader(
-    settings.data_dir, glob="*.txt", loader_cls=TextLoader, recursive=True
-)
+loaders = [
+    DirectoryLoader(
+        settings.data_dir, glob="*.txt", loader_cls=TextLoader, recursive=True
+    ),
+    DirectoryLoader(
+        settings.data_dir,
+        glob="*.pdf",
+        loader_cls=UnstructuredPDFLoader,
+        recursive=True,
+    ),
+    DirectoryLoader(
+        settings.data_dir,
+        glob="*.doc[x]*",
+        loader_cls=UnstructuredWordDocumentLoader,
+        recursive=True,
+    ),
+]
 
-documents = loader.load()
-
-word_loader = DirectoryLoader(
-    settings.data_dir,
-    glob="*.doc[x]*",
-    loader_cls=UnstructuredWordDocumentLoader,
-    recursive=True,
-)
-
-documents.extend(word_loader.load())
+documents = list(chain(*[l.load() for l in loaders]))
 
 for document in documents:
     print(emojize("  :page_facing_up:"), document.metadata["source"])

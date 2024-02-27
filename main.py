@@ -23,9 +23,9 @@ with warnings.catch_warnings():
 now = int(datetime.now().strftime("%Y%m%d%H%M%S"))
 
 logging.basicConfig(
-    datefmt="%Y%m%d%H%M%S",
+    datefmt="%Y-%m-%dT%H:%M:%SZ",
     filename=f"logs/{now}.log",
-    format="%(asctime)s:%(message)s",
+    format="%(asctime)s | %(message)s",
     level=logging.INFO,
 )
 
@@ -40,7 +40,7 @@ llm_load_start = datetime.now()
 llm = CTransformers(
     model=str(settings.llm_path),
     model_type="llama",
-    config={"max_new_tokens": 256, "temperature": 0.01},
+    config={"context_length": 1000, "max_new_tokens": 512, "temperature": 0.01},
 )
 
 llm_spinner.stop_and_persist(emojize(":brain:"), "Large Language Model loaded")

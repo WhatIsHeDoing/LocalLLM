@@ -4,7 +4,7 @@
             "source.organizeImports": "explicit",
             "source.unusedImports": "explicit"
         },
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "ms-python.black-formatter"
     },
     "cSpell.words": [
         "autoupdate",
@@ -21,5 +21,8 @@
         "source.fixAll": "always",
         "source.organizeImports": "always"
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "search.exclude": {
+        "*.log": true
+    }
 }

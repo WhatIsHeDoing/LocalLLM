@@ -6,8 +6,14 @@ halo
 humanize
 langchain
 langchain-community
+opencv-python
+pdf2image
+pikepdf
+pillow_heif
 pre-commit
 pydantic-settings
+pypdf
 python-docx
 sentence_transformers
 unstructured
+unstructured_inference
