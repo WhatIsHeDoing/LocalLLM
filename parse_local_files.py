@@ -4,12 +4,13 @@ This script creates a database of information gathered from local files.
 
 from datetime import datetime
 from emoji import emojize
+from halo import Halo
 from humanize import naturaldelta
-from itertools import chain
 
 from langchain_community.document_loaders import (
     DirectoryLoader,
     TextLoader,
+    UnstructuredExcelLoader,
     UnstructuredPDFLoader,
     UnstructuredWordDocumentLoader,
 )
@@ -33,6 +34,12 @@ loaders = [
     ),
     DirectoryLoader(
         settings.data_dir,
+        glob="*.xls[x]",
+        loader_cls=UnstructuredExcelLoader,
+        recursive=True,
+    ),
+    DirectoryLoader(
+        settings.data_dir,
         glob="*.pdf",
         loader_cls=UnstructuredPDFLoader,
         recursive=True,
@@ -45,21 +52,32 @@ loaders = [
     ),
 ]
 
-documents = list(chain(*[l.load() for l in loaders]))
+data_files = []
 
-for document in documents:
-    print(emojize("  :page_facing_up:"), document.metadata["source"])
+for loader in loaders:
+    loader_files = loader.load()
 
-print(emojize(":magnifying_glass_tilted_left: Interpreting the documents..."))
+    print(
+        emojize("  :magnifying_glass_tilted_left:"),
+        f"{loader.loader_cls.__name__}: {len(loader_files)} x {loader.glob}",
+    )
+
+    for data_file in loader_files:
+        print(emojize("    :page_facing_up:"), data_file.metadata["source"])
+        data_files.append(data_file)
+
+print(emojize(":microscope: Interpreting the documents..."))
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-texts = splitter.split_documents(documents)
+texts = splitter.split_documents(data_files)
 
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
 )
 
-print(emojize(":floppy_disk: Saving to a local database..."))
+save_spinner = Halo("Saving to a local database...", spinner="dots")
+save_spinner.start()
 db = FAISS.from_documents(texts, embeddings)
 db.save_local(settings.db_dir)
+save_spinner.stop_and_persist(emojize(":floppy_disk:"), "Saved to a local database")
 
 print(emojize(":waving_hand: Done in"), naturaldelta(datetime.now() - start))
