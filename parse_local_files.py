@@ -11,6 +11,7 @@ from langchain_community.document_loaders import (
     DirectoryLoader,
     TextLoader,
     UnstructuredExcelLoader,
+    UnstructuredImageLoader,
     UnstructuredPDFLoader,
     UnstructuredWordDocumentLoader,
 )
@@ -36,6 +37,18 @@ loaders = [
         settings.data_dir,
         glob="*.xls[x]",
         loader_cls=UnstructuredExcelLoader,
+        recursive=True,
+    ),
+    DirectoryLoader(
+        settings.data_dir,
+        glob="*.jp[e]g",
+        loader_cls=UnstructuredImageLoader,
+        recursive=True,
+    ),
+    DirectoryLoader(
+        settings.data_dir,
+        glob="*.png",
+        loader_cls=UnstructuredImageLoader,
         recursive=True,
     ),
     DirectoryLoader(

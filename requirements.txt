@@ -16,5 +16,7 @@ pydantic-settings
 pypdf
 python-docx
 sentence_transformers
+tesseract
 unstructured
 unstructured_inference
+unstructured_pytesseract
