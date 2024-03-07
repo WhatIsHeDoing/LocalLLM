@@ -21,76 +21,86 @@ from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from settings import print_as_dot_env, Settings
 
-start = datetime.now()
 
-print(emojize(":radio_button: Loading settings..."))
-settings = Settings()
-print_as_dot_env(settings)
+def save_to_vector_store(data_dir: str, db_dir: str):
+    start = datetime.now()
 
-print(emojize(":open_file_folder: Loading local documents..."))
+    print(emojize(":radio_button: Loading settings..."))
+    settings = Settings()
+    print_as_dot_env(settings)
 
-loaders = [
-    DirectoryLoader(
-        settings.data_dir, glob="*.txt", loader_cls=TextLoader, recursive=True
-    ),
-    DirectoryLoader(
-        settings.data_dir,
-        glob="*.xls[x]",
-        loader_cls=UnstructuredExcelLoader,
-        recursive=True,
-    ),
-    DirectoryLoader(
-        settings.data_dir,
-        glob="*.jp[e]g",
-        loader_cls=UnstructuredImageLoader,
-        recursive=True,
-    ),
-    DirectoryLoader(
-        settings.data_dir,
-        glob="*.png",
-        loader_cls=UnstructuredImageLoader,
-        recursive=True,
-    ),
-    DirectoryLoader(
-        settings.data_dir,
-        glob="*.pdf",
-        loader_cls=UnstructuredPDFLoader,
-        recursive=True,
-    ),
-    DirectoryLoader(
-        settings.data_dir,
-        glob="*.doc[x]*",
-        loader_cls=UnstructuredWordDocumentLoader,
-        recursive=True,
-    ),
-]
+    loaders = [
+        DirectoryLoader(
+            settings.data_dir, glob="*.txt", loader_cls=TextLoader, recursive=True
+        ),
+        DirectoryLoader(
+            settings.data_dir,
+            glob="*.xls[x]",
+            loader_cls=UnstructuredExcelLoader,
+            recursive=True,
+        ),
+        DirectoryLoader(
+            settings.data_dir,
+            glob="*.jp[e]g",
+            loader_cls=UnstructuredImageLoader,
+            recursive=True,
+        ),
+        DirectoryLoader(
+            settings.data_dir,
+            glob="*.png",
+            loader_cls=UnstructuredImageLoader,
+            recursive=True,
+        ),
+        DirectoryLoader(
+            settings.data_dir,
+            glob="*.pdf",
+            loader_cls=UnstructuredPDFLoader,
+            recursive=True,
+        ),
+        DirectoryLoader(
+            settings.data_dir,
+            glob="*.doc[x]*",
+            loader_cls=UnstructuredWordDocumentLoader,
+            recursive=True,
+        ),
+    ]
 
-data_files = []
+    data_files = []
 
-for loader in loaders:
-    loader_files = loader.load()
+    for loader in loaders:
+        loader_files = loader.load()
 
-    print(
-        emojize("  :magnifying_glass_tilted_left:"),
-        f"{loader.loader_cls.__name__}: {len(loader_files)} x {loader.glob}",
+        print(
+            emojize("  :magnifying_glass_tilted_left:"),
+            f"{loader.loader_cls.__name__}: {len(loader_files)} x {loader.glob}",
+        )
+
+        for data_file in loader_files:
+            print(emojize("    :page_facing_up:"), data_file.metadata["source"])
+            data_files.append(data_file)
+
+    print(emojize(":microscope: Interpreting the documents..."))
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    texts = splitter.split_documents(data_files)
+
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={"device": "cpu"},
     )
 
-    for data_file in loader_files:
-        print(emojize("    :page_facing_up:"), data_file.metadata["source"])
-        data_files.append(data_file)
+    save_spinner = Halo("Saving to a local database...", spinner="dots")
+    save_spinner.start()
 
-print(emojize(":microscope: Interpreting the documents..."))
-splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-texts = splitter.split_documents(data_files)
+    db = FAISS.from_documents(texts, embeddings)
+    db.save_local(db_dir)
+    save_spinner.stop_and_persist(emojize(":floppy_disk:"), "Saved to a local database")
 
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2", model_kwargs={"device": "cpu"}
-)
+    print(emojize(":waving_hand: Done in"), naturaldelta(datetime.now() - start))
 
-save_spinner = Halo("Saving to a local database...", spinner="dots")
-save_spinner.start()
-db = FAISS.from_documents(texts, embeddings)
-db.save_local(settings.db_dir)
-save_spinner.stop_and_persist(emojize(":floppy_disk:"), "Saved to a local database")
 
-print(emojize(":waving_hand: Done in"), naturaldelta(datetime.now() - start))
+if __name__ == "__main__":
+    print(emojize(":radio_button: Loading settings..."))
+    settings = Settings()
+    print_as_dot_env(settings)
+
+    save_to_vector_store(str(settings.data_dir), str(settings.db_dir))

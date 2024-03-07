@@ -26,3 +26,6 @@ pre_commit_update:
 
 run:
 	python3 main.py
+
+tests:
+	pytest

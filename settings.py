@@ -1,3 +1,5 @@
+"""This file models environment settings with defaults that can be overridden with a `.env` file."""
+
 from pathlib import Path
 from pydantic import DirectoryPath, FilePath
 from pydantic_settings import BaseSettings, SettingsConfigDict
