@@ -3,6 +3,7 @@
 from pathlib import Path
 from pydantic import DirectoryPath, FilePath
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -13,11 +14,14 @@ class Settings(BaseSettings):
     db_dir: DirectoryPath = Path("db")
     """Directory used to store the output of the interpretations of local data."""
 
-    data_dir: DirectoryPath = Path("test")
+    data_dir: DirectoryPath = Path("test/documents")
     """Directory containing the local data that will be interrogated to augment the LLM."""
 
     llm_path: FilePath = Path("../Llama-2-7B-Chat-GGML/llama-2-7b-chat.ggmlv3.q2_K.bin")
     """Relative path to the LLM used to power the chatbot."""
+
+    urls_file: Optional[FilePath] = None
+    """Optional relative path to the newline-delimited URLs to load and parse."""
 
 
 def print_as_dot_env(settings: Settings):

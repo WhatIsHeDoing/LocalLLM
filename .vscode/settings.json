@@ -6,6 +6,7 @@
         },
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
+    "cSpell.language": "en-GB",
     "cSpell.words": [
         "autoupdate",
         "emojize",

@@ -14,22 +14,30 @@ from langchain_community.document_loaders import (
     UnstructuredImageLoader,
     UnstructuredPDFLoader,
     UnstructuredWordDocumentLoader,
+    WebBaseLoader,
 )
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from pathlib import Path
 from settings import print_as_dot_env, Settings
 
 
-def save_to_vector_store(data_dir: str, db_dir: str):
+def save_to_vector_store(data_dir: str, db_dir: str, urls_file: str | None):
     start = datetime.now()
 
     print(emojize(":radio_button: Loading settings..."))
     settings = Settings()
     print_as_dot_env(settings)
 
-    loaders = [
+    urls = []
+
+    if urls_file:
+        urls = Path(urls_file).read_text().splitlines()
+
+    loaders: list[DirectoryLoader | WebBaseLoader] = [
+        WebBaseLoader(urls),
         DirectoryLoader(
             settings.data_dir, glob="*.txt", loader_cls=TextLoader, recursive=True
         ),
@@ -69,11 +77,12 @@ def save_to_vector_store(data_dir: str, db_dir: str):
 
     for loader in loaders:
         loader_files = loader.load()
+        files_detail = f"{loader.__class__.__name__}: {len(loader_files)}"
 
-        print(
-            emojize("  :magnifying_glass_tilted_left:"),
-            f"{loader.loader_cls.__name__}: {len(loader_files)} x {loader.glob}",
-        )
+        if isinstance(loader, DirectoryLoader):
+            files_detail = f"{files_detail} x {loader.glob}"
+
+        print(emojize("  :magnifying_glass_tilted_left:"), files_detail)
 
         for data_file in loader_files:
             print(emojize("    :page_facing_up:"), data_file.metadata["source"])
@@ -103,4 +112,6 @@ if __name__ == "__main__":
     settings = Settings()
     print_as_dot_env(settings)
 
-    save_to_vector_store(str(settings.data_dir), str(settings.db_dir))
+    save_to_vector_store(
+        str(settings.data_dir), str(settings.db_dir), settings.urls_file
+    )
