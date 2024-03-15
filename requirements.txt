@@ -16,6 +16,7 @@ pydantic-settings
 pypdf
 pytest
 python-docx
+python-pptx
 sentence_transformers
 tesseract
 unstructured

@@ -16,7 +16,8 @@
         "llms",
         "naturaldelta",
         "pydantic",
-        "vectorstores"
+        "vectorstores",
+        "Vigogne"
     ],
     "editor.codeActionsOnSave": {
         "source.fixAll": "always",

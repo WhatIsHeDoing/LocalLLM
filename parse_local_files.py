@@ -13,6 +13,7 @@ from langchain_community.document_loaders import (
     UnstructuredExcelLoader,
     UnstructuredImageLoader,
     UnstructuredPDFLoader,
+    UnstructuredPowerPointLoader,
     UnstructuredWordDocumentLoader,
     WebBaseLoader,
 )
@@ -26,11 +27,6 @@ from settings import print_as_dot_env, Settings
 
 def save_to_vector_store(data_dir: str, db_dir: str, urls_file: str | None):
     start = datetime.now()
-
-    print(emojize(":radio_button: Loading settings..."))
-    settings = Settings()
-    print_as_dot_env(settings)
-
     urls = []
 
     if urls_file:
@@ -67,12 +63,19 @@ def save_to_vector_store(data_dir: str, db_dir: str, urls_file: str | None):
         ),
         DirectoryLoader(
             settings.data_dir,
+            glob="*.ppt[x]",
+            loader_cls=UnstructuredPowerPointLoader,
+            recursive=True,
+        ),
+        DirectoryLoader(
+            settings.data_dir,
             glob="*.doc[x]*",
             loader_cls=UnstructuredWordDocumentLoader,
             recursive=True,
         ),
     ]
 
+    print(emojize(":gear: Finding files..."))
     data_files = []
 
     for loader in loaders:
@@ -85,7 +88,11 @@ def save_to_vector_store(data_dir: str, db_dir: str, urls_file: str | None):
         print(emojize("  :magnifying_glass_tilted_left:"), files_detail)
 
         for data_file in loader_files:
-            print(emojize("    :page_facing_up:"), data_file.metadata["source"])
+            print(
+                emojize("    :page_facing_up:"),
+                Path(data_file.metadata["source"]).relative_to(settings.data_dir),
+            )
+
             data_files.append(data_file)
 
     print(emojize(":microscope: Interpreting the documents..."))
